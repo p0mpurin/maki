@@ -25,12 +25,15 @@ typedef enum {
 } AppState;
 
 static Config cfg;
-static AnimeResult results[10]; static int result_count=0;
+#define MAX_SEARCH_RESULTS 20
+#define SEARCH_VISIBLE_ROWS 7
+#define EPISODE_VISIBLE_ROWS 7
+static AnimeResult results[MAX_SEARCH_RESULTS]; static int result_count=0;
 static Episode episodes[512]; static int episode_count=0;
 static char sel_id[64], sel_name[256];
 static int current_episode=1;
 static ListView search_results_list, episode_list, settings_list;
-static char *result_strings[10], *episode_strings[512], *settings_strings[5];
+static char *result_strings[MAX_SEARCH_RESULTS], *episode_strings[512], *settings_strings[5];
 
 #define LOG_LINES 14
 #define LOG_LINE_LEN 128
@@ -324,7 +327,7 @@ int main(void) {
     bot_target=C2D_CreateScreenTarget(GFX_BOTTOM,GFX_LEFT);
     sys_font=C2D_FontLoadSystem(CFG_REGION_USA);
     search_tbuf=C2D_TextBufNew(512);list_tbuf=C2D_TextBufNew(4096);top_tbuf=C2D_TextBufNew(4096);
-    for(int i=0;i<10;i++)result_strings[i]=NULL;
+    for(int i=0;i<MAX_SEARCH_RESULTS;i++)result_strings[i]=NULL;
     for(int i=0;i<512;i++)episode_strings[i]=NULL;
     log_add("maki ready");
     config_load(&cfg,"/3ds/maki/config.ini");
@@ -352,7 +355,7 @@ int main(void) {
         }
     }
     memset(wbufs,0,sizeof(wbufs)); memset(wbuf_data,0,sizeof(wbuf_data));
-    list_init(&search_results_list,20);list_init(&episode_list,20);
+    list_init(&search_results_list,SEARCH_VISIBLE_ROWS);list_init(&episode_list,EPISODE_VISIBLE_ROWS);
     list_init(&settings_list, 10);
     for(int i=0;i<5;i++) settings_strings[i]=NULL;
     settings_update_strings();
@@ -370,7 +373,7 @@ int main(void) {
         switch(state){
         case STATE_SEARCH:
             if(kdown&KEY_A){char*q=keyboard_get_input("Search...");if(q){
-                log_add("search: %s",q);int n=graphql_search(NULL,&cfg,q,results,10);
+                log_add("search: %s",q);int n=graphql_search(NULL,&cfg,q,results,MAX_SEARCH_RESULTS);
                 log_add("results: %d %s",n,n<=0?http_last_error():"");
                 if(n>0){result_count=n;for(int i=0;i<n;i++)result_strings[i]=strdup(results[i].name);
                     list_set_items(&search_results_list,(const char**)result_strings,n);state=STATE_RESULTS;}
@@ -1004,7 +1007,7 @@ int main(void) {
     }
 
     video_exit();ndspExit();
-    for(int i=0;i<10;i++)free(result_strings[i]);
+    for(int i=0;i<MAX_SEARCH_RESULTS;i++)free(result_strings[i]);
     for(int i=0;i<512;i++)free(episode_strings[i]);
     for(int i=0;i<5;i++) { if(settings_strings[i]) free(settings_strings[i]); }
     if(search_tbuf)C2D_TextBufDelete(search_tbuf);if(list_tbuf)C2D_TextBufDelete(list_tbuf);

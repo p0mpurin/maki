@@ -331,8 +331,8 @@ int graphql_search(HttpConn *conn, const Config *cfg, const char *query,
     snprintf(body, sizeof(body),
         "{\"query\":\"query($search:SearchInput$limit:Int)"
         "{shows(search:$search limit:$limit){edges{_id name availableEpisodes}}}\","
-        "\"variables\":{\"search\":{\"query\":\"%s\"},\"limit\":10}}",
-        query);
+        "\"variables\":{\"search\":{\"query\":\"%s\"},\"limit\":%d}}",
+        query, max_results);
 
     char *resp = (char *)malloc(MAX_RESPONSE);
     if (!resp) return -1;
