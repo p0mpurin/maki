@@ -1,0 +1,13 @@
+build/
+proxy/cache/
+proxy/*.log
+
+.reasonix/
+config.ini
+info.md
+maki.3dsx
+maki.elf
+
+*.o
+*.d
+*.map
